@@ -6,9 +6,28 @@ public class Grid {
     private String[][] board;
     private Ship[] ships;
 
-    // TODO convertCoord - validate user input and convert to {{x,y},{x,y}} format
     // TODO setShip - create ship object at valid location and add to grid.ships
 
+    public int[] toAxis(String cell) {
+        char[] components = cell.toCharArray();
+        int[] result = new int[2];
+        int start = ((int) 'A') - 1; // grid starts at (1,1), not (0,0)
+        result[0] = ((int) components[0]) - start; // convert letter
+        StringBuilder x = new StringBuilder();
+        for (int i = 1; i < cell.length(); i++) {
+            x.append(cell.charAt(i)); // convert digit(s)
+        }
+        result[1] = Integer.parseInt(String.valueOf(x));
+        return result;
+    }
+    public int[][] convertCoords(String inputLine) {
+        String[] coords = inputLine.trim().split(" ");
+        int[][] result = new int[2][2];
+        for (int i = 0; i < coords.length; i++) {
+            result[i] = toAxis(coords[i]);
+        }
+        return result;
+    }
     public void printBoard() {
         for (String[] line: board
              ) {
