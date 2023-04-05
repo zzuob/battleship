@@ -4,6 +4,10 @@ import java.util.Arrays;
 
 public class Grid {
     private String[][] board;
+    private Ship[] ships;
+
+    // TODO convertCoord - validate user input and convert to {{x,y},{x,y}} format
+    // TODO setShip - create ship object at valid location and add to grid.ships
 
     public void printBoard() {
         for (String[] line: board
