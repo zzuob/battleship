@@ -6,6 +6,14 @@ public class Ship {
     private int[][] position;
     private String shipClass;
 
+    public int[][] getPosition() {
+        return position;
+    }
+
+    public String getShipClass() {
+        return shipClass;
+    }
+
     public int getShipLength() {
         return switch (shipClass) {
             case "Destroyer" -> 2;

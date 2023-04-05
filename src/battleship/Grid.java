@@ -3,10 +3,24 @@ package battleship;
 import java.util.Arrays;
 
 public class Grid {
+
+    private int[] gridSize;
     private String[][] board;
     private Ship[] ships;
 
     // TODO setShip - create ship object at valid location and add to grid.ships
+    private boolean inBounds(int[] position) {
+        if (gridSize == null) throw new NullPointerException("Error - grid size is not set");
+        if (position.length != 2) throw new IllegalArgumentException("Error - positions are 2D");
+        boolean valid = true;
+        for (int i = 0; i < gridSize.length; i++) {
+            valid = 1 <= position[i] && position[i] < gridSize[i];
+            if (!valid) break;
+        }
+        return valid;
+
+
+    }
 
     public int[] toAxis(String cell) {
         char[] components = cell.toCharArray();
@@ -28,20 +42,11 @@ public class Grid {
         }
         return result;
     }
-    public void printBoard() {
-        for (String[] line: board
-             ) {
-            for (String symbol: line
-                 ) {
-                System.out.print(symbol+" ");
-            }
-            System.out.println();
-        }
-    }
-    public Grid (){
-        String[][] newBoard = new String[11][11];
+
+    private String[][] makeNewBoard() {
+        String[][] newBoard = new String[gridSize[0]][gridSize[1]];
         for (String[] line: newBoard
-             ) {
+        ) {
             Arrays.fill(line, "~");
         }
         for (int i = 0; i < newBoard[0].length; i++) {
@@ -52,8 +57,59 @@ public class Grid {
             char startChar = (char) (start+i);
             newBoard[i][0] = String.valueOf(startChar);
         }
-        newBoard[0][0] = "";
-        this.board = newBoard;
+        newBoard[0][0] = " ";
+        return newBoard;
+    }
+    public void printBoard() {
+        for (String[] line: board
+             ) {
+            for (String symbol: line
+                 ) {
+                System.out.print(symbol+" ");
+            }
+            System.out.println();
+        }
+    }
 
+    public void placeShip(Ship ship) {
+        int length = ship.getShipLength();
+        int[] pos1 = ship.getPosition()[0];
+        int[] pos2 = ship.getPosition()[1];
+        boolean valid = pos1[0] == pos2[0] || pos1[1] == pos2[1];
+        boolean isHorizontal = pos1[0] == pos2[0];
+        if (valid) {
+            if (inBounds(pos1) && inBounds(pos2)) {
+                int inputLength, start, repeat;
+                if (isHorizontal) {
+                    inputLength = Math.abs(pos1[1]-pos2[1]);
+                    start = Math.min(pos1[1], pos2[1]);
+                    repeat = pos1[0];
+
+                } else {
+                    inputLength = Math.abs(pos1[0]-pos2[0])+1; // TODO fix letter conversion
+                    start = Math.min(pos1[0], pos2[0]);
+                    repeat = pos1[1];
+                }
+                if (length != inputLength) {
+                    String message = String.format("Error - wrong length of %s", ship.getShipClass());
+                    throw new IllegalArgumentException(message);
+                }
+                for (int i = start; i < start+length; i++) {
+                    if (isHorizontal) board[repeat][i] = "O";
+                    else board[i][repeat] = "O";
+                }
+
+            } else throw new IllegalArgumentException("Error - position out of grid bounds");
+        }
+        else throw new IllegalArgumentException("Error - ship cannot be diagonal");
+
+    }
+    public Grid (){
+        this.gridSize = new int[]{11,11};
+        this.board = makeNewBoard();
+    }
+    public Grid (int[] size){
+        this.gridSize = size;
+        this.board = makeNewBoard();
     }
 }
