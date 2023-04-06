@@ -6,6 +6,10 @@ public class Ship {
     private int[][] position;
     private String shipClass;
 
+    public void setPosition(int[][] position) {
+        this.position = position;
+    }
+
     public int[][] getPosition() {
         return position;
     }
@@ -24,7 +28,7 @@ public class Ship {
         };
     }
 
-    public Ship (int[][] position, String shipClass) {
+    public Ship (String shipClass) {
         // create a new ship object
         this.isSunk = false;
         if (shipClass.length() == 1) {
@@ -58,7 +62,5 @@ public class Ship {
                 throw new IllegalArgumentException(message);
             }
         }
-        this.position = position; // TODO add method to validate this, given the length
-        // TODO add isHorizontal method
     }
 }
