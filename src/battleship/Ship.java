@@ -4,6 +4,7 @@ public class Ship {
     private boolean isHorizontal;
     private boolean isSunk;
     private int[][] position;
+    private int[][] cells;
     private String shipClass;
 
     public void setPosition(int[][] position) {
@@ -12,6 +13,14 @@ public class Ship {
 
     public int[][] getPosition() {
         return position;
+    }
+
+    public void setCells(int[][] cells) {
+        this.cells = cells;
+    }
+
+    public int[][] getCells() {
+        return cells;
     }
 
     public String getShipClass() {

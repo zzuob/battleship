@@ -5,13 +5,15 @@ import java.util.Scanner;
 public class Game {
 
     private Grid playerBoard;
-    private final Ship[] allShips = {new Ship("A"), new Ship("B"), new Ship("S"),
-                    new Ship("C"), new Ship("D")};
+
     public Game() {
         this.playerBoard = new Grid();
         playerBoard.printBoard();
+        Ship[] allShips = {new Ship("A"), new Ship("B"), new Ship("S"),
+                new Ship("C"), new Ship("D")};
         Ship[] newShips = new Ship[allShips.length];
         for (int i = 0; i < allShips.length; i++){
+            // create each ship using the positioning specified by the user
             Ship ship = allShips[i];
             boolean invalid = true;
             while (invalid) {
@@ -20,8 +22,8 @@ public class Game {
                     String message = String.format("Enter the coordinates of the %s (%d cells):\n",
                             ship.getShipClass(), ship.getShipLength());
                     System.out.println(message);
-                    String pos1 = "";
-                    String pos2 = "";
+                    String pos1;
+                    String pos2;
                     if (scan.hasNext()) {
                         pos1 = scan.next();
                         if (scan.hasNext()) {
@@ -35,12 +37,11 @@ public class Game {
                     }
 
                 } catch (Exception e) {
-                    String message = String.format("Error - %s", e.getMessage());
+                    String message = String.format("\nError - %s", e.getMessage());
                     System.out.println(message);
                 }
             }
         }
-        playerBoard.setShips(newShips);
 
     }
 }
