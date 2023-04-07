@@ -15,6 +15,11 @@ public class Grid {
         ships.add(ship);
     }
 
+    public void clearShips() {
+        ships = new ArrayList<>();
+        board = makeNewBoard();
+    }
+
     private boolean isCellValid(int[] cell) {
         // cell passes if unoccupied and has space on all sides (excluding diagonal)
         boolean unoccupied = Objects.equals(board[cell[0]][cell[1]], "~");

@@ -1,23 +1,21 @@
 package battleship;
 
+import java.util.Objects;
 import java.util.Scanner;
 
 public class Game {
 
+    public final Ship[] allShips = {new Ship("A"), new Ship("B"), new Ship("S"),
+            new Ship("C"), new Ship("D")};
     private Grid playerBoard;
+    private Grid opponentBoard;
 
-    public Game() {
-        this.playerBoard = new Grid();
-        playerBoard.printBoard();
-        Ship[] allShips = {new Ship("A"), new Ship("B"), new Ship("S"),
-                new Ship("C"), new Ship("D")};
-        Ship[] newShips = new Ship[allShips.length];
-        for (int i = 0; i < allShips.length; i++){
+    private void playerInit() {
+        for (Ship ship : allShips) {
             // create each ship using the positioning specified by the user
-            Ship ship = allShips[i];
             boolean invalid = true;
             while (invalid) {
-                try  {
+                try {
                     Scanner scan = new Scanner(System.in);
                     String message = String.format("Enter the coordinates of the %s (%d cells):\n",
                             ship.getShipClass(), ship.getShipLength());
@@ -30,7 +28,6 @@ public class Game {
                             pos2 = scan.next();
                             ship.setPosition(playerBoard.convertCoords(pos1, pos2));
                             playerBoard.placeShip(ship);
-                            newShips[i] = ship;
                             playerBoard.printBoard();
                             invalid = false;
                         }
@@ -42,6 +39,63 @@ public class Game {
                 }
             }
         }
+    }
+
+    private int get1To10(){ return (int) (Math.random()*10)+1; }
+
+    private void opponentInit() {
+        boolean finished = false;
+        int debugCounter;
+        while (!finished) {
+            debugCounter = 0; // count failed placements per ship
+            for (Ship ship : allShips) {
+                // create each ship using a random position
+                if (debugCounter > 10) {
+                    // after 10 tries to place ship, reset all placements and start over
+                    opponentBoard.clearShips();
+                    break;
+                }
+                int length = ship.getShipLength();
+                boolean invalid = true;
+                debugCounter = 0;
+                while (invalid) {
+                    int[] pos1 = new int[]{get1To10(), get1To10()};
+                    // 50:50 horizontal to vertical placement
+                    boolean isHorizontal = Math.random() < 0.5;
+                    int x2, y2;
+                    if (isHorizontal) {
+                        y2 = pos1[0];
+                        x2 = pos1[1] + length - 1;
+
+                    } else {
+                        y2 = pos1[0] + length - 1;
+                        x2 = pos1[1];
+                    }
+                    int[] pos2 = new int[]{y2, x2};
+                    int[][] position = new int[][]{pos1, pos2};
+                    try {
+                        ship.setPosition(position);
+                        opponentBoard.placeShip(ship);
+                        invalid = false;
+                        //opponentBoard.printBoard();
+                        if (Objects.equals(ship.getShipClass(), "Destroyer")) finished = true;
+                    } catch (Exception e) {
+                        debugCounter++;
+                        //opponentBoard.printBoard();
+                        //System.out.printf("CPU failed to place ship %d time(s), reason: %s\n", debugCounter, e.getMessage());
+                    }
+                }
+            }
+        }
+    }
+
+    public Game() {
+        this.playerBoard = new Grid();
+        this.opponentBoard = new Grid();
+        opponentInit();
+        playerBoard.printBoard();
+        playerInit();
+
 
     }
 }
