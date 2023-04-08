@@ -3,6 +3,8 @@ package battleship;
 import java.util.Objects;
 import java.util.Scanner;
 
+import static battleship.Grid.toAxis;
+
 public class Game {
 
     public final Ship[] allShips = {new Ship("A"), new Ship("B"), new Ship("S"),
@@ -89,12 +91,35 @@ public class Game {
         }
     }
 
+    public void callShot() {
+        boolean invalid = true;
+        while (invalid) {
+            try {
+                Scanner scan = new Scanner(System.in);
+                System.out.println("Take a shot!\n");
+                if (scan.hasNext()) {
+                    String position = scan.next();
+                    int[] cell = toAxis(position);
+                    playerBoard.addHit(cell); // TODO change to opponent board
+                    invalid = false;
+                }
+            } catch (Exception e) {
+                String message = String.format("\nError - %s", e.getMessage());
+                System.out.println(message);
+            }
+        }
+        System.out.println();
+        playerBoard.printBoard(); // TODO change to opponent board
+    }
+
     public Game() {
         this.playerBoard = new Grid();
         this.opponentBoard = new Grid();
         opponentInit();
-        playerBoard.printBoard();
         playerInit();
+        //playerBoard = opponentBoard; // for testing
+        playerBoard.printBoard();
+        //playerInit();
 
 
     }

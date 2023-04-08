@@ -20,6 +20,39 @@ public class Grid {
         board = makeNewBoard();
     }
 
+    public void addHit(int[] cell) {
+        if (isOutOfBounds(cell)) {
+            throw new IllegalArgumentException("position outside grid area");
+        }
+        //System.out.printf("cell (%s)\n",Arrays.toString(cell));
+        int shipIndex = -1;
+        for (int i = 0; i < ships.size(); i++) {
+            for (int[] shipCell: ships.get(i).getCells()
+                 ) {
+                //System.out.println(Arrays.toString(shipCell) +" ");
+                if (cell[0]==shipCell[0] && cell[1]==shipCell[1]) {
+                    shipIndex = i;
+                    //System.out.print("\n"+ships.get(i).getShipClass()+" - ");
+                    break;
+                }
+            }
+            if (shipIndex != -1) break;
+        } // update the ship
+        //ships.get(shipIndex).incHitCount();
+        // update the board
+        String symbol;
+        if (shipIndex > -1) {
+            //System.out.println("isHit = true");
+            symbol = "X";
+            System.out.println("You hit a ship!");
+        } else {
+            symbol = "M";
+            System.out.println("You missed!");
+        }
+        board[cell[0]][cell[1]] = symbol;
+
+    }
+
     private boolean isCellValid(int[] cell) {
         // cell passes if unoccupied and has space on all sides (excluding diagonal)
         boolean unoccupied = Objects.equals(board[cell[0]][cell[1]], "~");
@@ -54,7 +87,7 @@ public class Grid {
         return !valid;
     }
 
-    public int[] toAxis(String cell) {
+    public static int[] toAxis(String cell) {
         // convert coordinates to a 2D position e.g. A1 -> { 1, 1}
         if (cell == null) throw new NullPointerException("coordinate cannot be null");
         char[] components = cell.toCharArray();
