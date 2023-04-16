@@ -15,6 +15,17 @@ public class Grid {
         ships.add(ship);
     }
 
+    public void showShips() {
+        for (Ship ship: ships) {
+            for (int[] cell: ship.getCells()) {
+                if (!board[cell[0]][cell[1]].matches("X")) {
+                    // ignore hits but replace all other ship indicators
+                    board[cell[0]][cell[1]] = "O";
+                }
+            }
+        }
+    }
+
     public void hideShips() {
         // hide ships but keep their positions
         board = makeNewBoard();
@@ -27,6 +38,7 @@ public class Grid {
     }
 
     public void addHit(int[] cell) {
+        // add hit to game board
         if (isOutOfBounds(cell)) {
             throw new IllegalArgumentException("position outside grid area");
         }
@@ -50,10 +62,10 @@ public class Grid {
         if (shipIndex > -1) {
             //System.out.println("isHit = true");
             symbol = "X";
-            System.out.println("You hit a ship!");
+            System.out.println("\nYou hit a ship!");
         } else {
             symbol = "M";
-            System.out.println("You missed!");
+            System.out.println("\nYou missed!");
         }
         board[cell[0]][cell[1]] = symbol;
 

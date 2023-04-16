@@ -94,11 +94,12 @@ public class Game {
 
     public void callShot() {
         // validate a shot called by a player
+        playerBoard.printBoard(); // show the player the current board
+        System.out.println("Take a shot!\n"); // input prompt
         boolean invalid = true;
         while (invalid) {
             try {
                 Scanner scan = new Scanner(System.in);
-                System.out.println("Take a shot!\n");
                 if (scan.hasNext()) {
                     String position = scan.next();
                     int[] cell = toAxis(position);
@@ -111,6 +112,7 @@ public class Game {
             }
         }
         System.out.println();
+        playerBoard.showShips();
         playerBoard.printBoard(); // TODO change to opponent board
     }
 
@@ -121,9 +123,7 @@ public class Game {
         playerInit();
         //playerBoard = opponentBoard; // for testing
         playerBoard.hideShips();
-        System.out.println("The game starts!");
-        System.out.println();
-        playerBoard.printBoard();
+        System.out.println("The game starts!\n");
 
 
     }
