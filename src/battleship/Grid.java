@@ -15,7 +15,13 @@ public class Grid {
         ships.add(ship);
     }
 
+    public void hideShips() {
+        // hide ships but keep their positions
+        board = makeNewBoard();
+    }
+
     public void clearShips() {
+        // clear all graphics & ships from grid
         ships = new ArrayList<>();
         board = makeNewBoard();
     }

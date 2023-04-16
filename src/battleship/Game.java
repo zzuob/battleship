@@ -46,6 +46,7 @@ public class Game {
     private int get1To10(){ return (int) (Math.random()*10)+1; }
 
     private void opponentInit() {
+        // randomly generate all 5 ship placements
         boolean finished = false;
         int debugCounter;
         while (!finished) {
@@ -92,6 +93,7 @@ public class Game {
     }
 
     public void callShot() {
+        // validate a shot called by a player
         boolean invalid = true;
         while (invalid) {
             try {
@@ -118,8 +120,10 @@ public class Game {
         opponentInit();
         playerInit();
         //playerBoard = opponentBoard; // for testing
+        playerBoard.hideShips();
+        System.out.println("The game starts!");
+        System.out.println();
         playerBoard.printBoard();
-        //playerInit();
 
 
     }
