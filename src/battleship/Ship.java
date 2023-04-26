@@ -1,22 +1,17 @@
 package battleship;
 
 public class Ship {
-    private boolean isHorizontal;
-    private int hitCount = 0;
+    private boolean isSunk;
     private int[][] position;
     private int[][] cells;
     private String shipClass;
 
-    public void incHitCount() {
-        hitCount++;
-    }
-
-    public int getHitCount() {
-        return hitCount;
-    }
-
     public boolean isSunk() {
-        return hitCount == getShipLength();
+        return isSunk;
+    }
+
+    public void setSunk(boolean sunk) {
+        isSunk = sunk;
     }
 
     public void setPosition(int[][] position) {
@@ -51,6 +46,7 @@ public class Ship {
 
     public Ship (String shipClass) {
         // create a new ship object
+        this.isSunk = false;
         if (shipClass.length() == 1) {
             this.shipClass = switch(shipClass) {
                 case "D" -> "Destroyer";

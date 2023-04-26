@@ -9,10 +9,14 @@ public class Game {
 
     public final Ship[] allShips = {new Ship("A"), new Ship("B"), new Ship("S"),
             new Ship("C"), new Ship("D")};
-    private Grid playerBoard;
-    private Grid opponentBoard;
+    private Grid board1;
+    private Grid board2;
 
-    private void playerInit() {
+    enum State {
+        PLACE, SHOOT, UPDATE, WIN, END
+    }
+
+    private void playerInit(Grid board) {
         for (Ship ship : allShips) {
             // create each ship using the positioning specified by the user
             boolean invalid = true;
@@ -28,9 +32,9 @@ public class Game {
                         pos1 = scan.next();
                         if (scan.hasNext()) {
                             pos2 = scan.next();
-                            ship.setPosition(playerBoard.convertCoords(pos1, pos2));
-                            playerBoard.placeShip(ship);
-                            playerBoard.printBoard();
+                            ship.setPosition(board.convertCoords(pos1, pos2));
+                            board.placeShip(ship);
+                            board.printBoard();
                             invalid = false;
                         }
                     }
@@ -45,7 +49,7 @@ public class Game {
 
     private int get1To10(){ return (int) (Math.random()*10)+1; }
 
-    private void opponentInit() {
+    private void computerInit(Grid board) {
         // randomly generate all 5 ship placements
         boolean finished = false;
         int debugCounter;
@@ -55,7 +59,7 @@ public class Game {
                 // create each ship using a random position
                 if (debugCounter > 10) {
                     // after 10 tries to place ship, reset all placements and start over
-                    opponentBoard.clearShips();
+                    board.clearShips();
                     break;
                 }
                 int length = ship.getShipLength();
@@ -78,24 +82,25 @@ public class Game {
                     int[][] position = new int[][]{pos1, pos2};
                     try {
                         ship.setPosition(position);
-                        opponentBoard.placeShip(ship);
+                        board.placeShip(ship);
                         invalid = false;
-                        //opponentBoard.printBoard();
                         if (Objects.equals(ship.getShipClass(), "Destroyer")) finished = true;
                     } catch (Exception e) {
                         debugCounter++;
-                        //opponentBoard.printBoard();
-                        //System.out.printf("CPU failed to place ship %d time(s), reason: %s\n", debugCounter, e.getMessage());
+                        System.out.printf(
+                                "[DEBUG] CPU failed to place ship %d time(s), reason: %s\n",
+                                debugCounter, e.getMessage());
                     }
                 }
             }
         }
     }
 
-    public void callShot() {
+    private String callShot(Grid board) {
         // validate a shot called by a player
-        playerBoard.printBoard(); // show the player the current board
+        board.printBoard(); // show the player the current board
         System.out.println("Take a shot!\n"); // input prompt
+        String message = "";
         boolean invalid = true;
         while (invalid) {
             try {
@@ -103,28 +108,76 @@ public class Game {
                 if (scan.hasNext()) {
                     String position = scan.next();
                     int[] cell = toAxis(position);
-                    playerBoard.addHit(cell); // TODO change to opponent board
+                    message = board.addHit(cell); // TODO change to opponent board
                     invalid = false;
                 }
             } catch (Exception e) {
-                String message = String.format("\nError - %s", e.getMessage());
-                System.out.println(message);
+                System.out.format("\nError - %s", e.getMessage());
             }
         }
         System.out.println();
-        playerBoard.showShips();
-        playerBoard.printBoard(); // TODO change to opponent board
+        return message;
+    }
+
+    public void loop(boolean debug) {
+        State state = State.PLACE;
+        String message = "";
+        Grid opponent = board1;
+        while (state != State.END) {
+            switch (state) {
+                case PLACE:
+                    if (debug) {
+                        System.out.printf("[DEBUG] Game state: %s\n", state);
+                        computerInit(opponent);
+                    } else {
+                        playerInit(opponent);
+                    }
+                    opponent.visibleShips(false);
+                    System.out.println("[DEBUG] The game starts!\n");
+                    state = State.SHOOT;
+                    break;
+                case SHOOT:
+                    if (debug) {
+                        System.out.printf("[DEBUG] Game state: %s\n", state);
+                    }
+                    message = callShot(opponent);
+                    if (debug) {
+                        System.out.println("[DEBUG] Unhidden board:");
+                        opponent.visibleShips(true);
+                        opponent.printBoard();
+                        opponent.visibleShips(false);
+                    }
+                    state = State.UPDATE;
+                    break;
+                case UPDATE:
+                    if (debug) {
+                        System.out.printf("[DEBUG] Game state: %s\n", state);
+                    }
+                    String overwrite = opponent.updateShips();
+                    if (!"".equals(overwrite)){
+                        message = overwrite;
+                    }
+                    if (opponent.hasLost()) {
+                        state = State.WIN;
+                    } else {
+                        System.out.println(message);
+                        state = State.SHOOT;
+                    }
+                    break;
+                case WIN:
+                    if (debug) {
+                        System.out.printf("[DEBUG] Game state: %s\n", state);
+                    }
+                    opponent.printBoard();
+                    System.out.println("You sank the last ship. You won. Congratulations!");
+                    state = State.END;
+                    break;
+            }
+        }
     }
 
     public Game() {
-        this.playerBoard = new Grid();
-        this.opponentBoard = new Grid();
-        opponentInit();
-        playerInit();
-        //playerBoard = opponentBoard; // for testing
-        playerBoard.hideShips();
-        System.out.println("The game starts!\n");
-
-
+        this.board1 = new Grid();
+        this.board2 = new Grid();
     }
 }

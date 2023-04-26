@@ -9,26 +9,31 @@ public class Grid {
 
     private final int[] gridSize;
     private String[][] board;
-    private List<Ship> ships = new ArrayList<>();
+    private List<Ship> ships = new ArrayList<>(); // list of active ships
 
-    public void addShip(Ship ship) {
-        ships.add(ship);
-    }
+    public void setShips(List<Ship> ships) { this.ships = ships; }
 
-    public void showShips() {
+    public List<Ship> getShips() { return ships; }
+
+    public void addShip(Ship ship) { ships.add(ship); }
+
+    public void visibleShips(boolean show) {
+        String match, replace;
+        if (show) {
+            match = "~";
+            replace = "O";
+        } else {
+            match = "O";
+            replace = "~";
+        }
         for (Ship ship: ships) {
             for (int[] cell: ship.getCells()) {
-                if (!board[cell[0]][cell[1]].matches("X")) {
-                    // ignore hits but replace all other ship indicators
-                    board[cell[0]][cell[1]] = "O";
+                if (board[cell[0]][cell[1]].matches(match)) {
+                    // ignore hits and misses but replace all other ship indicators
+                    board[cell[0]][cell[1]] = replace;
                 }
             }
         }
-    }
-
-    public void hideShips() {
-        // hide ships but keep their positions
-        board = makeNewBoard();
     }
 
     public void clearShips() {
@@ -37,37 +42,66 @@ public class Grid {
         board = makeNewBoard();
     }
 
-    public void addHit(int[] cell) {
+    public String updateShips() {
+        String message = "";
+        for (int i = 0; i < ships.size(); i++) {
+            if (!ships.get(i).isSunk()) {
+                int hits = 0;
+                for (int[] cell : ships.get(i).getCells()) {
+                    if (board[cell[0]][cell[1]].matches("X")) {
+                        hits++; // count hits
+                    }
+                }
+                boolean sunk = hits == ships.get(i).getShipLength();
+                if (sunk) {
+                    ships.get(i).setSunk(true);
+                    message = ("You sank a ship! Specify a new target:");
+                }
+            }
+        }
+        return message;
+    }
+
+    public boolean hasLost() {
+        // have all ships on the board been sunk?
+        int sunkCount = 0;
+        for (Ship ship : ships) {
+            if (ship.isSunk()) {
+                sunkCount++;
+            }
+        }
+        return sunkCount == ships.size();
+    }
+
+    public String addHit(int[] cell) {
         // add hit to game board
+        String message;
         if (isOutOfBounds(cell)) {
             throw new IllegalArgumentException("position outside grid area");
         }
-        //System.out.printf("cell (%s)\n",Arrays.toString(cell));
         int shipIndex = -1;
-        for (int i = 0; i < ships.size(); i++) {
+        for (int i = 0; i < ships.size(); i++) { // check if the selected cell matches a ship
             for (int[] shipCell: ships.get(i).getCells()
                  ) {
-                //System.out.println(Arrays.toString(shipCell) +" ");
                 if (cell[0]==shipCell[0] && cell[1]==shipCell[1]) {
                     shipIndex = i;
-                    //System.out.print("\n"+ships.get(i).getShipClass()+" - ");
                     break;
                 }
             }
             if (shipIndex != -1) break;
-        } // update the ship
-        //ships.get(shipIndex).incHitCount();
+        }
         // update the board
         String symbol;
-        if (shipIndex > -1) {
-            //System.out.println("isHit = true");
+        if (shipIndex > -1 || "X".equals(board[cell[0]][cell[1]])) {
+            // doesn't overwrite previous hits
             symbol = "X";
-            System.out.println("\nYou hit a ship!");
+            message = "You hit a ship! Try again:";
         } else {
             symbol = "M";
-            System.out.println("\nYou missed!");
+            message = "You missed. Try again:";
         }
         board[cell[0]][cell[1]] = symbol;
+        return message;
 
     }
 
@@ -142,12 +176,12 @@ public class Grid {
         for (int i = 0; i < newBoard[0].length; i++) {
             newBoard[0][i] = Integer.toString(i);
         }
-        char start = '@'; // char before 'A'
+        char start = '@'; // char before 'A', header starts at [1][0]
         for (int i = 0; i < newBoard.length; i++) {
             char startChar = (char) (start+i);
             newBoard[i][0] = String.valueOf(startChar);
         }
-        newBoard[0][0] = " ";
+        newBoard[0][0] = " "; // no character in top left corner
         return newBoard;
     }
     public void printBoard() {
@@ -219,6 +253,8 @@ public class Grid {
         this.gridSize = new int[]{11,11};
         this.board = makeNewBoard();
     }
+
+    @Deprecated
     public Grid (int[] size){
         this.gridSize = size;
         this.board = makeNewBoard();
