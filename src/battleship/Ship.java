@@ -4,7 +4,7 @@ public class Ship {
     private boolean isSunk;
     private int[][] position;
     private int[][] cells;
-    private String shipClass;
+    private final String shipClass;
 
     public boolean isSunk() {
         return isSunk;
@@ -47,7 +47,8 @@ public class Ship {
     public Ship (String shipClass) {
         // create a new ship object
         this.isSunk = false;
-        if (shipClass.length() == 1) {
+        // validate ship's class
+        if (shipClass.length() == 1) { // single-letter abbreviations for each class
             this.shipClass = switch(shipClass) {
                 case "D" -> "Destroyer";
                 case "C" -> "Cruiser";
@@ -60,9 +61,6 @@ public class Ship {
                 }
             };
         } else {
-            if (shipClass == null) {
-                throw new IllegalArgumentException("shipClass is required for each ship");
-            }
             String[] shipClasses = {"Aircraft Carrier", "Battleship", "Submarine", "Cruiser", "Destroyer"};
             boolean valid = false;
             for (String ship: shipClasses
@@ -72,8 +70,9 @@ public class Ship {
                     break;
                 }
             }
-            if (valid) this.shipClass = shipClass;
-            else {
+            if (valid) {
+                this.shipClass = shipClass;
+            } else {
                 String message = String.format("shipClass %s does not exist", shipClass);
                 throw new IllegalArgumentException(message);
             }

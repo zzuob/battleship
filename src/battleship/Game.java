@@ -18,7 +18,7 @@ public class Game {
 
     private void playerInit(Grid board) {
         for (Ship ship : allShips) {
-            // create each ship using the positioning specified by the user
+            // create each ship at a position specified by the user
             boolean invalid = true;
             while (invalid) {
                 try {
@@ -26,14 +26,14 @@ public class Game {
                     String message = String.format("Enter the coordinates of the %s (%d cells):\n",
                             ship.getShipClass(), ship.getShipLength());
                     System.out.println(message);
-                    String pos1;
-                    String pos2;
+                    String pos1, pos2;
                     if (scan.hasNext()) {
                         pos1 = scan.next();
                         if (scan.hasNext()) {
                             pos2 = scan.next();
+                            // will throw an error if pos1 and pos2 aren't valid positions for the ship
                             ship.setPosition(board.convertCoords(pos1, pos2));
-                            board.placeShip(ship);
+                            board.placeShip(ship); // update the grid with the new ship
                             board.printBoard();
                             invalid = false;
                         }
@@ -108,7 +108,7 @@ public class Game {
                 if (scan.hasNext()) {
                     String position = scan.next();
                     int[] cell = toAxis(position);
-                    message = board.addHit(cell); // TODO change to opponent board
+                    message = board.addHit(cell);
                     invalid = false;
                 }
             } catch (Exception e) {
@@ -126,6 +126,7 @@ public class Game {
         while (state != State.END) {
             switch (state) {
                 case PLACE:
+                    // place all ships on the board
                     if (debug) {
                         System.out.printf("[DEBUG] Game state: %s\n", state);
                         computerInit(opponent);
@@ -133,16 +134,17 @@ public class Game {
                         playerInit(opponent);
                     }
                     opponent.visibleShips(false);
-                    System.out.println("[DEBUG] The game starts!\n");
+                    System.out.println("The game starts!\n");
                     state = State.SHOOT;
                     break;
                 case SHOOT:
+                    // add a hit or miss to the opponents board
                     if (debug) {
                         System.out.printf("[DEBUG] Game state: %s\n", state);
                     }
-                    message = callShot(opponent);
+                    message = callShot(opponent); // message = either a hit or a miss
                     if (debug) {
-                        System.out.println("[DEBUG] Unhidden board:");
+                        System.out.println("[DEBUG] Board without fog of war:");
                         opponent.visibleShips(true);
                         opponent.printBoard();
                         opponent.visibleShips(false);
@@ -150,21 +152,23 @@ public class Game {
                     state = State.UPDATE;
                     break;
                 case UPDATE:
+                    // check if a ship has been sunk, and if all ships have been sunk
                     if (debug) {
                         System.out.printf("[DEBUG] Game state: %s\n", state);
                     }
-                    String overwrite = opponent.updateShips();
+                    String overwrite = opponent.updateShips(); // check if a ship has been sunk
                     if (!"".equals(overwrite)){
-                        message = overwrite;
+                        message = overwrite; // sunk notification takes precedence over the hit notification
                     }
                     if (opponent.hasLost()) {
                         state = State.WIN;
                     } else {
                         System.out.println(message);
-                        state = State.SHOOT;
+                        state = State.SHOOT; // not all ships are sunk, go back to SHOOT state
                     }
                     break;
                 case WIN:
+                    // all ships have been sunk on a grid
                     if (debug) {
                         System.out.printf("[DEBUG] Game state: %s\n", state);
                     }

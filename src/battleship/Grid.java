@@ -18,6 +18,7 @@ public class Grid {
     public void addShip(Ship ship) { ships.add(ship); }
 
     public void visibleShips(boolean show) {
+        // make ship cells "O" visible or hidden
         String match, replace;
         if (show) {
             match = "~";
@@ -51,7 +52,7 @@ public class Grid {
                     if (board[cell[0]][cell[1]].matches("X")) {
                         hits++; // count hits
                     }
-                }
+                } // a ship is sunk if it's been hit on each occupied cell
                 boolean sunk = hits == ships.get(i).getShipLength();
                 if (sunk) {
                     ships.get(i).setSunk(true);
@@ -63,7 +64,7 @@ public class Grid {
     }
 
     public boolean hasLost() {
-        // have all ships on the board been sunk?
+        // have all ships on the grid been sunk?
         int sunkCount = 0;
         for (Ship ship : ships) {
             if (ship.isSunk()) {
@@ -106,7 +107,7 @@ public class Grid {
     }
 
     private boolean isCellValid(int[] cell) {
-        // cell passes if unoccupied and has space on all sides (excluding diagonal)
+        // cell passes if unoccupied and has space (fog) on all sides (excluding diagonal)
         boolean unoccupied = Objects.equals(board[cell[0]][cell[1]], "~");
         boolean topSpace = cell[0] == 1 || Objects.equals(board[cell[0] - 1][cell[1]], "~");
         boolean bottomSpace = cell[0] == gridSize[0]-1 || Objects.equals(board[cell[0] + 1][cell[1]], "~");
