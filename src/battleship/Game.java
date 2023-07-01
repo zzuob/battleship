@@ -9,14 +9,18 @@ public class Game {
 
     public final Ship[] allShips = {new Ship("A"), new Ship("B"), new Ship("S"),
             new Ship("C"), new Ship("D")};
-    private Grid board1;
-    private Grid board2;
+    private final Grid board1;
+    private final Grid board2;
+
+    private boolean isPlayer1Turn = true;
+    private final boolean debug;
 
     enum State {
         PLACE, SHOOT, UPDATE, WIN, END
     }
 
     private void playerInit(Grid board) {
+        board.printBoard();
         for (Ship ship : allShips) {
             // create each ship at a position specified by the user
             boolean invalid = true;
@@ -119,29 +123,43 @@ public class Game {
         return message;
     }
 
-    public void loop(boolean debug) {
+    private String getPlayerNo() { return isPlayer1Turn ? "1" : "2"; }
+    private void placeShipsOnGrid(Grid grid) {
+        System.out.printf("Player %s, place your ships on the game field\n", getPlayerNo());
+        if (debug) {
+            computerInit(grid);
+        } else {
+            playerInit(grid);
+        }
+    }
+
+    private void changeTurn() {
+        Scanner scan = new Scanner(System.in);
+        System.out.println("Press Enter and pass the move to another player");
+        if (scan.hasNextLine()) {
+            isPlayer1Turn = !isPlayer1Turn;
+        }
+    }
+
+    public void loop() {
         State state = State.PLACE;
         String message = "";
         Grid opponent = board1;
         while (state != State.END) {
+            if (debug) {
+                System.out.printf("[DEBUG] Game state: %s\n", state);
+            }
             switch (state) {
-                case PLACE:
+                case PLACE -> {
                     // place all ships on the board
-                    if (debug) {
-                        System.out.printf("[DEBUG] Game state: %s\n", state);
-                        computerInit(opponent);
-                    } else {
-                        playerInit(opponent);
-                    }
-                    opponent.visibleShips(false);
-                    System.out.println("The game starts!\n");
+                    placeShipsOnGrid(board1);
+                    changeTurn();
+                    placeShipsOnGrid(board2);
+                    changeTurn();
                     state = State.SHOOT;
-                    break;
-                case SHOOT:
+                }
+                case SHOOT -> {
                     // add a hit or miss to the opponents board
-                    if (debug) {
-                        System.out.printf("[DEBUG] Game state: %s\n", state);
-                    }
                     message = callShot(opponent); // message = either a hit or a miss
                     if (debug) {
                         System.out.println("[DEBUG] Board without fog of war:");
@@ -150,14 +168,11 @@ public class Game {
                         opponent.visibleShips(false);
                     }
                     state = State.UPDATE;
-                    break;
-                case UPDATE:
+                }
+                case UPDATE -> {
                     // check if a ship has been sunk, and if all ships have been sunk
-                    if (debug) {
-                        System.out.printf("[DEBUG] Game state: %s\n", state);
-                    }
                     String overwrite = opponent.updateShips(); // check if a ship has been sunk
-                    if (!"".equals(overwrite)){
+                    if (!"".equals(overwrite)) {
                         message = overwrite; // sunk notification takes precedence over the hit notification
                     }
                     if (opponent.hasLost()) {
@@ -166,22 +181,20 @@ public class Game {
                         System.out.println(message);
                         state = State.SHOOT; // not all ships are sunk, go back to SHOOT state
                     }
-                    break;
-                case WIN:
+                }
+                case WIN -> {
                     // all ships have been sunk on a grid
-                    if (debug) {
-                        System.out.printf("[DEBUG] Game state: %s\n", state);
-                    }
                     opponent.printBoard();
                     System.out.println("You sank the last ship. You won. Congratulations!");
                     state = State.END;
-                    break;
+                }
             }
         }
     }
 
-    public Game() {
+    public Game(boolean debug) {
         this.board1 = new Grid();
         this.board2 = new Grid();
+        this.debug = debug;
     }
 }
