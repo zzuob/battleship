@@ -7,8 +7,7 @@ import static battleship.Grid.toAxis;
 
 public class Game {
 
-    public final Ship[] allShips = {new Ship("A"), new Ship("B"), new Ship("S"),
-            new Ship("C"), new Ship("D")};
+    public final String[] allClasses = {"A", "B", "S", "C", "D"};
     private final Grid board1;
     private final Grid board2;
 
@@ -21,8 +20,9 @@ public class Game {
 
     private void playerInit(Grid board) {
         board.printBoard();
-        for (Ship ship : allShips) {
+        for (String shipClass : allClasses) {
             // create each ship at a position specified by the user
+            Ship ship = new Ship(shipClass);
             boolean invalid = true;
             while (invalid) {
                 try {
@@ -59,7 +59,8 @@ public class Game {
         int debugCounter;
         while (!finished) {
             debugCounter = 0; // count failed placements per ship
-            for (Ship ship : allShips) {
+            for (String shipClass : allClasses) {
+                Ship ship = new Ship(shipClass);
                 // create each ship using a random position
                 if (debugCounter > 10) {
                     // after 10 tries to place ship, reset all placements and start over
@@ -102,8 +103,6 @@ public class Game {
 
     private String callShot(Grid board) {
         // validate a shot called by a player
-        board.printBoard(); // show the player the current board
-        System.out.println("Take a shot!\n"); // input prompt
         String message = "";
         boolean invalid = true;
         while (invalid) {
@@ -136,18 +135,25 @@ public class Game {
     private void changeTurn() {
         Scanner scan = new Scanner(System.in);
         System.out.println("Press Enter and pass the move to another player");
-        if (scan.hasNextLine()) {
-            isPlayer1Turn = !isPlayer1Turn;
-        }
+        scan.nextLine();
+        isPlayer1Turn = !isPlayer1Turn;
     }
 
     public void loop() {
         State state = State.PLACE;
         String message = "";
-        Grid opponent = board1;
+        String divider = "---------------------";
+        Grid opponent, player;
         while (state != State.END) {
             if (debug) {
                 System.out.printf("[DEBUG] Game state: %s\n", state);
+            }
+            if (isPlayer1Turn) {
+                player = board1;
+                opponent = board2;
+            } else {
+                player = board2;
+                opponent = board1;
             }
             switch (state) {
                 case PLACE -> {
@@ -159,14 +165,14 @@ public class Game {
                     state = State.SHOOT;
                 }
                 case SHOOT -> {
-                    // add a hit or miss to the opponents board
+                    // show boards
+                    opponent.visibleShips(false);
+                    opponent.printBoard();
+                    System.out.println(divider);
+                    player.visibleShips(true);
+                    player.printBoard();
+                    System.out.printf("Player %s, it's your turn:\n", getPlayerNo());
                     message = callShot(opponent); // message = either a hit or a miss
-                    if (debug) {
-                        System.out.println("[DEBUG] Board without fog of war:");
-                        opponent.visibleShips(true);
-                        opponent.printBoard();
-                        opponent.visibleShips(false);
-                    }
                     state = State.UPDATE;
                 }
                 case UPDATE -> {
@@ -179,6 +185,7 @@ public class Game {
                         state = State.WIN;
                     } else {
                         System.out.println(message);
+                        changeTurn();
                         state = State.SHOOT; // not all ships are sunk, go back to SHOOT state
                     }
                 }

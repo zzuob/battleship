@@ -9,28 +9,24 @@ public class Grid {
 
     private final int[] gridSize;
     private String[][] board;
-    private List<Ship> ships = new ArrayList<>(); // list of active ships
-
-    public void setShips(List<Ship> ships) { this.ships = ships; }
-
-    public List<Ship> getShips() { return ships; }
+    private List<Ship> ships = new ArrayList<>(); // list of all ships on grid
 
     public void addShip(Ship ship) { ships.add(ship); }
 
     public void visibleShips(boolean show) {
         // make ship cells "O" visible or hidden
-        String match, replace;
+        String replace;
         if (show) {
-            match = "~";
             replace = "O";
         } else {
-            match = "O";
             replace = "~";
         }
         for (Ship ship: ships) {
+            //System.out.println(ship.getShipClass()+" - "+ Arrays.deepToString(ship.getCells()));
             for (int[] cell: ship.getCells()) {
-                if (board[cell[0]][cell[1]].matches(match)) {
+                if (!board[cell[0]][cell[1]].matches("[XM]")) {
                     // ignore hits and misses but replace all other ship indicators
+                    //System.out.println("\t"+board[cell[0]][cell[1]]);
                     board[cell[0]][cell[1]] = replace;
                 }
             }
@@ -45,18 +41,18 @@ public class Grid {
 
     public String updateShips() {
         String message = "";
-        for (int i = 0; i < ships.size(); i++) {
-            if (!ships.get(i).isSunk()) {
+        for (Ship ship : ships) {
+            if (!ship.isSunk()) {
                 int hits = 0;
-                for (int[] cell : ships.get(i).getCells()) {
+                for (int[] cell : ship.getCells()) {
                     if (board[cell[0]][cell[1]].matches("X")) {
                         hits++; // count hits
                     }
                 } // a ship is sunk if it's been hit on each occupied cell
-                boolean sunk = hits == ships.get(i).getShipLength();
+                boolean sunk = hits == ship.getShipLength();
                 if (sunk) {
-                    ships.get(i).setSunk(true);
-                    message = ("You sank a ship! Specify a new target:");
+                    ship.setSunk(true);
+                    message = ("You sank a ship!");
                 }
             }
         }
@@ -96,10 +92,10 @@ public class Grid {
         if (shipIndex > -1 || "X".equals(board[cell[0]][cell[1]])) {
             // doesn't overwrite previous hits
             symbol = "X";
-            message = "You hit a ship! Try again:";
+            message = "You hit a ship!";
         } else {
             symbol = "M";
-            message = "You missed. Try again:";
+            message = "You missed!";
         }
         board[cell[0]][cell[1]] = symbol;
         return message;
@@ -187,7 +183,6 @@ public class Grid {
     }
     public void printBoard() {
         // print the current game board
-        System.out.println();
         for (String[] line: board
              ) {
             for (String symbol: line
@@ -196,7 +191,6 @@ public class Grid {
             }
             System.out.println();
         }
-        System.out.println();
     }
 
     public void placeShip(Ship ship) {
