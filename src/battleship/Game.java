@@ -14,6 +14,8 @@ public class Game {
     private boolean isPlayer1Turn = true;
     private final boolean debug;
 
+    private final Scanner scan = new Scanner(System.in);
+
     enum State {
         PLACE, SHOOT, UPDATE, WIN, END
     }
@@ -26,7 +28,6 @@ public class Game {
             boolean invalid = true;
             while (invalid) {
                 try {
-                    Scanner scan = new Scanner(System.in);
                     String message = String.format("Enter the coordinates of the %s (%d cells):\n",
                             ship.getShipClass(), ship.getShipLength());
                     System.out.println(message);
@@ -92,9 +93,11 @@ public class Game {
                         if (Objects.equals(ship.getShipClass(), "Destroyer")) finished = true;
                     } catch (Exception e) {
                         debugCounter++;
-                        System.out.printf(
-                                "[DEBUG] CPU failed to place ship %d time(s), reason: %s\n",
-                                debugCounter, e.getMessage());
+                        if (debug) {
+                            System.out.printf(
+                                    "[DEBUG] CPU failed to place ship %d time(s), reason: %s\n",
+                                    debugCounter, e.getMessage());
+                        }
                     }
                 }
             }
@@ -107,7 +110,6 @@ public class Game {
         boolean invalid = true;
         while (invalid) {
             try {
-                Scanner scan = new Scanner(System.in);
                 if (scan.hasNext()) {
                     String position = scan.next();
                     int[] cell = toAxis(position);
@@ -125,7 +127,25 @@ public class Game {
     private String getPlayerNo() { return isPlayer1Turn ? "1" : "2"; }
     private void placeShipsOnGrid(Grid grid) {
         System.out.printf("Player %s, place your ships on the game field\n", getPlayerNo());
-        if (debug) {
+        System.out.println("Place (1) automatically or (2) manually?");
+        int choice = -1;
+        while (!(1 <= choice && choice <= 2)) {
+            boolean validInput = false;
+            if (scan.hasNextLine()) {
+                String number = scan.nextLine();
+                if (number.matches("\\d+")) {
+                    choice = Integer.parseInt(number);
+                    if (choice == 1 || choice == 2) {
+                        validInput = true;
+                    }
+                }
+            }
+            if (!validInput) {
+                System.out.println("Enter 1 or 2");
+            }
+        }
+        boolean autoPlace = choice == 1;
+        if (debug || autoPlace) {
             computerInit(grid);
         } else {
             playerInit(grid);
@@ -133,7 +153,6 @@ public class Game {
     }
 
     private void changeTurn() {
-        Scanner scan = new Scanner(System.in);
         System.out.println("Press Enter and pass the move to another player");
         scan.nextLine();
         isPlayer1Turn = !isPlayer1Turn;
